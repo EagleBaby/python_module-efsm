@@ -219,7 +219,7 @@ It can deploy on micropython. This module offer a StateMachine class. And you ca
 
 该模式可以部署在micropython单片机上。这个模块提供了一个StateMachine类，并且你可以将它们的实例连接成网  
 
-1. how to use:
+##### 1. how to use:
 ```python
 from efsm import StateMachine
 
@@ -245,7 +245,7 @@ i'm moving, next to stop
 finish.
 ```
 
-2. You could jump to update other fsm:  
+##### 2. You could jump to update other fsm:  
 how to link statemachine:  
 ```python
 from efsm import StateMachine
@@ -278,7 +278,7 @@ finish.
 ```
 But careful for the circle link. It will cause infinite loop.  
   
-3. You could create a StateSet before, and pass this state_set to .add(...)  
+##### 3. You could create a StateSet before, and pass this state_set to .add(...)  
 ```python
 from efsm import StateMachine, StateSet
 
@@ -306,7 +306,7 @@ finish.
 ```
 
 
-4. By the way, that StateSet is not a user object:  
+##### 4. By the way, that StateSet is not a user object:  
 ```python
 from efsm import StateSet
 
@@ -325,7 +325,7 @@ It can only deploy on PC python. As the name 'shell' shown, it have all the meth
 该模式只能部署在电脑端的python上。类如其名，这个'shell'就好像标准模式下的StateMachine下加了一个壳。它提供了一些简单方便的途经去生成一个fsm  
 
 
-1. how to use:  
+##### 1. how to use:  
 Shell-mode use Efsm to replace StateMachine:
 ```python
 from efsm import Efsm, fsm  # efsm offer you a default Efsm instance named fsm
@@ -378,14 +378,14 @@ i'm moving, next to stop
 finish.
 ```
 
-2. but we could use decorater to make it more simple:  
-use decorater to do the same thing: 
+##### 2. but we could use decorater to make it more simple:  
+use decorater to do the same thing:  
 ```python
 from efsm.shell import *
 
 ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-mode
 
-@ss.idle.move.stop
+@ss.idle.move.stop  # only use for function. not the class method
 def update(state, o):
   match state:
       case 'idle':
@@ -408,7 +408,7 @@ from efsm.shell import *
 ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-mode
 
 @fsm
-@ss.idle.move.stop
+@ss.idle.move.stop  # only use for function. not the class method
 def update(state, o):
   match state:
       case 'idle':
@@ -427,7 +427,7 @@ use fsm.ss replace ss could reach the same effect:
 ```python
 from efsm.shell import *
 
-@fsm.ss.idle.move.stop
+@fsm.ss.idle.move.stop  # only use for function. not the class method
 def update(state, o):
   match state:
       case 'idle':
@@ -446,6 +446,100 @@ i'm idle, next to move
 i'm moving, next to stop
 finish
 ```
+##### 3. use doc to do the same thing:  
+you must add @state or @sta or @s to the function's doc:  
+```python
+from efsm.shell import *
+
+def update(state, o):
+  """
+  @state idle move stop  # you could use ',' as the separater.  like idle, move stop
+  """
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+fsm.add(update)   # this way need call .add
+
+while fsm.step(): ...
+print("finish")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish
+```
+
+##### 4. use doc to a class used EfsmMeta:  
+you could do the similiar thing to a class which use EfsmMeta
+```python
+from efsm.shell import *
+
+class Test(metaclass=EfsmMeta):  # use EfsmMeta to auto add Test._efsm = Efsm()
+  """
+  @state idle move stop -> update   # do not same as the function doc, you need to use '->' or ':' ro assign a method in the class to these group states
+  """
+  
+  # __step__ = 'step'  # Auto create a method in this class, used for efsm.step(). Default is 'step', you can overwrite it.
+  # def __bool__(self): ...  # Auto create a __bool__ method if you donot define it, Default is efsm.__bool__, you can overwrite it.
+  
+  def update(self, state, o):
+    """
+    @state idle move stop  # you could use ',' as the separater.  like idle, move stop
+    """
+    match state:
+        case 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        case 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+    return 'stop'
+
+test = Test()
+
+while test.step(): ...  # test doesnot have any other method in efsm.
+print("finish")
+```
+take a compare with the follow example(not use EfsmMeta):
+```python
+from efsm.shell import *
+
+class Test:
+  """
+  @state idle move stop -> update  # in this way, the '->' is useless.
+  """
+  def __call__(self, state, o):
+    match state:
+        case 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        case 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+    return 'stop'
+
+test = Test()
+
+fsm.add(test)
+
+while fsm.step(): ...
+print("finish")
+```
+  
+That's all this python_module-efsm provides.  
+Now i will show you few demos in real project:
+
+# 5. demos:
+## 1. Python Demo (Efsm)
+...
+## 2. MicroPython Demo (micro or StateMachine)
+to use in micropython. you need to copy the core.py from efsm/standard/core.py or efsm/micro/core.py to your micropython device, and you can rename it to 'efsm.py'
 
 
 
