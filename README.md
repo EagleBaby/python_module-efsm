@@ -537,9 +537,6 @@ class Test(metaclass=EfsmMeta):  # use EfsmMeta to auto add Test._efsm = Efsm()
   # def __bool__(self): ...  # Auto create a __bool__ method if you donot define it, Default is efsm.__bool__, you can overwrite it.
   
   def update(self, state, o):
-    """
-    @state idle move stop  # you could use ',' as the separater.  like idle, move stop
-    """
     match state:
         case 'idle':
             print("i'm idle, next to move")
