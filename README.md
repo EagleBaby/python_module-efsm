@@ -148,7 +148,7 @@ def find(state):
 
 use list(...) to showcase all state-(fn, data) in fsm
 ```python
-def list(self):
+def list():
   """
   showcase state
   Note: it do not return list but dict
@@ -187,14 +187,14 @@ use restart(...) to reset your fsm but keep your config and all the smallest uni
 ```python
 def is_prepare():
   """
-  get whether the fsm is steped.
-  :return: bool
+  reset your fsm but keep your config and all the smallest units
+  :return:
   """
 ```
 
 use step(...) to update your fsm
 ```python
-def step(state):
+def step():
   """
   step, mean update once
   :return: bool about statemachine is running-needy or not.
