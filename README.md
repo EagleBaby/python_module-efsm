@@ -113,11 +113,54 @@ def find(state):
   """
 ```
 
+use list(...) to showcase all state-(fn, data) in fsm
+```python
+def list(self):
+  """
+  showcase state
+  Note: it do not return list but dict
+  :return: {state: (fn, data)}
+  """
+```
+
+
+```python
+
+```
+
+use step(...) to update your fsm
+```python
+def step(state):
+  """
+  find the smallest unit corresponding to a state
+  :param state: fsm find the state, and return the smallest unit
+  :return: [states, fn, data] or None
+  """
+```
 
 # 2. Micro Mode:
 It can deploy on micropython. The simplest fsm in this module only consist of some datum and functions. You could to use this module as a singleton object.  
 
 该模式可以部署在micropython单片机上。这个模块只包含一些函数和数据，你可以把这个module当作一个单例对象
+
+how to use:
+```python
+from efsm import micro
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+ 
+ micro.
+
+```
+
 
 
 
