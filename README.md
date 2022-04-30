@@ -1,3 +1,5 @@
+![](https://github.com/EagleBaby/python_module-efsm/blob/main/version-0.2.x-green.svg)
+![](https://github.com/EagleBaby/python_module-efsm/blob/main/author-EagleBaby-yellowgreen.svg)
 # Catalogue/ 目录
 - [General/ 总体描述](#1)  
   - [State/ 状态](#11)  
