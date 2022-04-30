@@ -1,3 +1,5 @@
+
+![](https://github.com/EagleBaby/python_module-efsm/blob/main/Platform-Python_MicroPython-blue.svg)
 ![](https://github.com/EagleBaby/python_module-efsm/blob/main/version-0.2.x-green.svg)
 ![](https://github.com/EagleBaby/python_module-efsm/blob/main/author-EagleBaby-yellowgreen.svg)
 # Catalogue/ 目录
