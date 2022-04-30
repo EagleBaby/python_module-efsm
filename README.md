@@ -123,25 +123,68 @@ def list(self):
   """
 ```
 
-
+use tolist(...) to get all the smallest units in fsm
 ```python
+def tolist():
+  """
+  change _groups to list
+  :return: [[(*state), fn, data], ...]
+  """
+```
 
+use is_finish(...) to get whether this fsm is finish.(only work when your fsm been setted 'end')
+```python
+def is_finish():
+  """
+  get whether the fsm is finish.
+  :return: bool
+  """
+```
+
+use is_prepare(...) to get whether this fsm have executed .step().
+```python
+def is_prepare():
+  """
+  get whether the fsm is steped.
+  :return: bool
+  """
+```
+
+use restart(...) to reset your fsm but keep your config and all the smallest units
+```python
+def is_prepare():
+  """
+  get whether the fsm is steped.
+  :return: bool
+  """
 ```
 
 use step(...) to update your fsm
 ```python
 def step(state):
   """
-  find the smallest unit corresponding to a state
-  :param state: fsm find the state, and return the smallest unit
-  :return: [states, fn, data] or None
+  step, mean update once
+  :return: bool about statemachine is running-needy or not.
   """
 ```
+## config the start (and end)
+There are some attrs in your fsm:
+##### .state   &emsp;&emsp;   # tell you the the state now fsm is. &emsp;&emsp;# default be setted as .start when first call .step W/R
+##### .start   &emsp;&emsp;   # tell fsm what the first state is when it first .step.  &emsp;&emsp;# it is a must-fill attr W/R
+##### .end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
+##### .end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
+##### .on_step &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic before .step return 
+##### .on_end  &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic when state==end in .step 
+
+At least, you must config the .start.
+
+
+The statemachine usage is different in these three way:
 
 # 2. Micro Mode:
-It can deploy on micropython. The simplest fsm in this module only consist of some datum and functions. You could to use this module as a singleton object.  
+It can deploy on micropython. The simplest fsm in this module only consist of some datum and functions. You could to use this module as a singleton object.    
 
-该模式可以部署在micropython单片机上。这个模块只包含一些函数和数据，你可以把这个module当作一个单例对象
+该模式可以部署在micropython单片机上。这个模块只包含一些函数和数据，你可以把这个module当作一个单例对象  
 
 how to use:
 ```python
@@ -157,9 +200,255 @@ def update(state, o):
           return "stop"
   return 'stop'
  
- micro.
+micro.add('idle', 'move', 'stop', fn=update)  # fn is must in micro mode. data is available.
+micro.start = 'idle'
+micro.end = 'stop'
 
+while micro.step(): ...
+print("finish.")
 ```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish.
+```
+
+
+# 3. Standard Mode:
+It can deploy on micropython. This module offer a StateMachine class. And you can link their instances to a net.
+
+该模式可以部署在micropython单片机上。这个模块提供了一个StateMachine类，并且你可以将它们的实例连接成网  
+
+1. how to use:
+```python
+from efsm import StateMachine
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+ 
+sm = StateMachine('idle', 'stop')
+sm.add('idle', 'move', 'stop', fn=update)  # fn is must in standard mode. data is available.
+
+while sm.step(): ...
+print("finish.")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish.
+```
+
+2. You could jump to update other fsm:  
+how to link statemachine:  
+```python
+from efsm import StateMachine
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+ 
+sm1, sm2 = StateMachine('idle', 'stop'), StateMachine('idle', 'stop')
+sm1.add('idle', 'move', 'stop', fn=update)
+sm2.add('idle', 'move', 'stop', fn=update)
+
+sm1.link('stop', sm2, 'idle')  # link sm1.stop -> sm2.idle    # when sm1.state come to 'stop', it will start at sm2.idle in next sm1.step
+
+while sm1.step(): ... # note that you only call sm1.step() here
+print("finish.")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+i'm idle, next to move
+i'm moving, next to stop
+finish.
+```
+But careful for the circle link. It will cause infinite loop.  
+  
+3. You could create a StateSet before, and pass this state_set to .add(...)  
+```python
+from efsm import StateMachine, StateSet
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+ 
+sm = StateMachine('idle', 'stop')
+ss = StateSet('idle', 'move', 'stop', fn=update)  # it have the same params as .add
+sm.add(ss)  # fn is must in standard mode. data is available.
+
+while sm.step(): ...
+print("finish.")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish.
+```
+
+
+4. By the way, that StateSet is not a user object:  
+```python
+from efsm import StateSet
+
+ss = StateSet('idle', 'move', 'stop', fn=lambda *a: ...)
+print(ss)
+print(type(ss))
+```
+```
+[('idle', 'move', 'stop'), <function <lambda> at 0x0000028BC8DD76D0>, <efsm.standard.core.Local object at 0x0000028BC8E269B0>]
+<class 'list'>
+```
+
+# 4. Shell Mode:
+It can only deploy on PC python. As the name 'shell' shown, it have all the methods statemachine in standard-mode had, almost like a shell on statemachine in standard-mode. It provide some convienent ways to create fsm.  
+
+该模式只能部署在电脑端的python上。类如其名，这个'shell'就好像标准模式下的StateMachine下加了一个壳。它提供了一些简单方便的途经去生成一个fsm  
+
+
+1. how to use:  
+Shell-mode use Efsm to replace StateMachine:
+```python
+from efsm import Efsm, fsm  # efsm offer you a default Efsm instance named fsm
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+# fsm = Efsm()  # 1. use default efsm for showcase  2. Efsm could instance without params
+fsm.add('idle', 'move', 'stop', fn=update)
+
+# When efsm has not start, it will try to take the first state added at the first time as start
+# so the start is 'idle'
+
+# When efsm has not end, it will try to take the last state added at the first time as end
+# so the end is 'stop'
+
+while fsm.step(): ...
+print("finish")
+```
+When we take off all the notes:  
+very simplify code, right?
+```python
+from efsm import Efsm, fsm
+
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+fsm.add('idle', 'move', 'stop', fn=update)
+
+while fsm.step(): ...
+print("finish")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish.
+```
+
+2. but we could use decorater to make it more simple:  
+use decorater to do the same thing: 
+```python
+from efsm.shell import *
+
+ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-mode
+
+@ss.idle.move.stop
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+fsm.add(update)
+
+while fsm.step(): ...
+print("finish")
+```
+use @fsm before the @ss.idle... could auto add it to fsm
+```python
+from efsm.shell import *
+
+ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-mode
+
+@fsm
+@ss.idle.move.stop
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+while fsm.step(): ...
+print("finish")
+```
+every efsm instance has theirself ss.    
+use fsm.ss replace ss could reach the same effect:
+```python
+from efsm.shell import *
+
+@fsm.ss.idle.move.stop
+def update(state, o):
+  match state:
+      case 'idle':
+          print("i'm idle, next to move")
+          return "move"
+      case 'move':
+          print("i'm moving, next to stop")
+          return "stop"
+  return 'stop'
+
+while fsm.step(): ...
+print("finish")
+```
+```
+i'm idle, next to move
+i'm moving, next to stop
+finish
+```
+
+
+
 
 
 
