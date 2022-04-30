@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from efsm.micro.core import *
+
 """
 a branch version specific for micropython or other streamlined case.
 

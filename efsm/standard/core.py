@@ -8,6 +8,7 @@ class StateSet:
     """
     定义了一组state，这些state共用一个二段式的函数
     """
+
     def __new__(cls, *names, fn=None, data=None):
         assert fn is not None, "param 'fn' need a function like fn(state, d)->state but get None."
 
@@ -56,19 +57,18 @@ class StateMachineBase:
         self._prepare = True
 
         # 指示部分
-        self.start = start          # 指示状态机入口， 是一个keyname
-        self.state = self.start     # 指示状态机当前状态， 是一个keyname
-        self.end = end              # 指示状态机出口， 是一个keyname
+        self.start = start  # 指示状态机入口， 是一个keyname
+        self.state = self.start  # 指示状态机当前状态， 是一个keyname
+        self.end = end  # 指示状态机出口， 是一个keyname
         self.on_step = on_step
         self.on_end = on_end
 
         # 数据部分
-        self._groups = {}    # {(names, ...): [fn, data]}
+        self._groups = {}  # {(names, ...): [fn, data]}
 
         # net部分
         self._target = None
-        self.links = {}     # {name: [statemachine, to_state]}
-
+        self.links = {}  # {name: [statemachine, to_state]}
 
     def tolist(self):
         """
@@ -77,7 +77,6 @@ class StateMachineBase:
         :return: [[(names), fn, data], ...]
         """
         return [[k] + v for k, v in self._groups.items()]
-
 
     @staticmethod
     def _redirect(self, state):
@@ -95,7 +94,6 @@ class StateMachineBase:
                 return get_
         else:
             return None
-
 
     @staticmethod
     def _standard(*state, fn=None, data=None):
@@ -151,17 +149,19 @@ class StateMachineBase:
 
 
 class StateMachine(StateMachineBase):
-    def add(self, *state, fn=None, data=None):
+    def add(self, *state, fn=None, data=None) -> list:
         """
+        add a smallest unit to your statemachine
+
         # example:
-        .add(s_idle)
         .add('idle', 'move', fn = my_fn)
 
-
-        :param state: [keynames, fn, data] or *names, fn=None
-        :param fn: only available when len(state) > 1 which mean you want to instance a StateSet in this add function.
-        :param data: only available when len(state) > 1 which mean you want to instance a StateSet in this add function.
-        :return:
+        :param *state: include some states as a group.
+        :param fn: then assign a proccessing function to only handle this group of states
+                _: None  Note that this is a must param. If you do not pass fn
+        :param data: the 'o' offer to your proccessing function
+                _: None  Mean it will create a empty object instance for this smallest unit.
+        :return: list[tuple[*state], fn, data]
         """
 
         state = StateMachine._standard(*state, fn=fn, data=data)
@@ -169,23 +169,28 @@ class StateMachine(StateMachineBase):
         self._groups[state[0]] = state[1:]
         return state
 
-    def remove(self, *state, error=True):
+    def remove(self, *state, error=True) -> None:
         """
-        移除某种状态
+        remove a state.
+        It won't remove the hole group states but only remove the state from the group states
+        The smallest unit will be remove only after all of it's group states all being removed.
         # example
         .remove('idle')
         .remove('idle', 'move')
 
-        :param state: [state:keyname, ...]
+        :param *state: fsm will remove them one by one.
         :param error: bool If not find, will raise error
-        :return:
+        :return: None
         """
         for s in state:
             _s = StateMachine._find(self._groups, s)
 
             if _s is not None:
-                list(_s).remove(s)
+                _s = _s[0]
                 temp = self._groups.pop(_s)
+                _s = list(_s)
+                _s.remove(s)
+                _s = tuple(_s)
                 if _s:
                     self._groups[_s] = temp
             elif error:
@@ -193,20 +198,21 @@ class StateMachine(StateMachineBase):
 
     def find(self, state):
         """
-        寻找一个state
-        :param state: keyname
-        :return: (fn, data) or None
+        find the smallest unit corresponding to a state
+        :param state: fsm find the state, and return the smallest unit
+        :return: [states, fn, data] or None
         """
         s = StateMachine._find(self._groups, state)
 
         if s is not None:
-            return s[1], s[2]
+            return s
         else:
             return None
 
     def list(self):
         """
-        展示所有的state
+        showcase state
+        Note: it do not return list but dict
         :return: {state: (fn, data)}
         """
         states = {}
@@ -215,7 +221,7 @@ class StateMachine(StateMachineBase):
                 states[name] = self._groups[k]
         return states
 
-    def link(self, state, target:StateMachineBase, target_state=None):
+    def link(self, state, target: StateMachineBase, target_state=None):
         """
         redirect statemachine when statemachine step with this spec state
 
@@ -277,9 +283,9 @@ class StateMachine(StateMachineBase):
             self.on_step(self)
 
         # check if end
-        if self.end is not None and state == self.end:
+        if state == self.end and self.end is not None:
             if self.on_end: self.on_end(self)
-            return False
+            return bool(self)
 
         return True
 
@@ -302,21 +308,25 @@ class StateMachine(StateMachineBase):
 if __name__ == '__main__':
     """ --------  example 1 -------- """
     print("example 1: ")
+
+
     def update(state, data):
-        match state:
-            case 'idle':
-                print("i'm idle, next to move")
-                return "move"
-            case 'move':
-                print("i'm moving, next to stop")
-                return "stop"
-        return 'stop'
+        if state == 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        elif state == 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+        else:
+            return 'stop'
 
 
     sm1 = StateMachine('idle', 'stop')
 
-    sm1.add('idle', 'move', 'stop', fn=update)
-
+    sm1.add('idle', 'move', 'stop', "useless", fn=update)
+    print(sm1.list())
+    sm1.remove('useless')
+    print(sm1.list())
     while sm1:
         print(sm1, '\n\t', end="")
         sm1.step()
@@ -326,15 +336,17 @@ if __name__ == '__main__':
 
     """ -------- example 2 -------- """
     print("example 2: ")
+
+
     def update(state, *a):
-        match state:
-            case 'idle':
-                print("i'm idle, next to move")
-                return "move"
-            case 'move':
-                print("i'm moving, next to stop")
-                return "stop"
-        return 'stop'
+        if state == 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        elif state == 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+        else:
+            return 'stop'
 
 
     sm1 = StateMachine('idle', 'stop')
@@ -350,5 +362,27 @@ if __name__ == '__main__':
         sm1.step()
         print()
 
-
     print("finish.")
+
+
+    def update(state, o):
+        if state == 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        elif state == 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+        else:
+            return 'stop'
+
+
+    sm1, sm2 = StateMachine('idle', 'stop'), StateMachine('idle', 'stop')
+    sm1.add('idle', 'move', 'stop', fn=update)
+    sm2.add('idle', 'move', 'stop', fn=update)
+
+    sm1.link('stop', sm2,'idle')  # link sm1.stop -> sm2.idle &emsp;&emsp; # when sm1.state come to 'stop', it will start at sm2.idle in next sm1.step
+
+    while sm1.step():
+        ...  # note that you only call sm1.step() here
+    print("finish.")
+

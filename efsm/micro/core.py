@@ -30,6 +30,13 @@ def _find(groups, name):
             return [k] + groups[k]
     return None
 
+def tolist():
+    """
+    change _groups to list
+    :return: [[(*state), fn, data], ...]
+    """
+    return [[k] + v for k, v in _groups.items()]
+
 def restart():
     global start, state, end, on_step, on_end, _prepare, _groups
     start = None
@@ -45,15 +52,17 @@ def restart():
 
 def add(*states, fn=None, data=None):
     """
+    add a smallest unit to your statemachine
+
     # example:
-    add(s_idle)
-    add('idle', 'move', fn = my_fn)
+    .add('idle', 'move', fn = my_fn)
 
-
-    :param state: [keynames, fn, data] or *names, fn=None
-    :param fn: only available when len(state) > 1 which mean you want to instance a StateSet in this add function.
-    :param data: only available when len(state) > 1 which mean you want to instance a StateSet in this add function.
-    :return:
+    :param *state: include some states as a group.
+    :param fn: then assign a proccessing function to only handle this group of states
+            _: None  Note that this is a must param. If you do not pass fn
+    :param data: the 'o' offer to your proccessing function
+            _: None  Mean it will create a empty object instance for this smallest unit.
+    :return: list[tuple[*state], fn, data]
     """
 
     states = [states, fn, Local() if data is None else data]
@@ -76,8 +85,11 @@ def remove(*state, error=True):
         _s = _find(_groups, s)
 
         if _s is not None:
-            list(_groups).remove(s)
+            _s = _s[0]
             temp = _groups.pop(_s)
+            _s = list(_s)
+            _s.remove(s)
+            _s = tuple(_s)
             if _s:
                 _groups[_s] = temp
         elif error:
@@ -85,14 +97,14 @@ def remove(*state, error=True):
 
 def find(state):
     """
-    寻找一个state
-    :param state: keyname
-    :return: (fn, data) or None
+    find the smallest unit corresponding to a state
+    :param state: fsm find the state, and return the smallest unit
+    :return: [states, fn, data] or None
     """
     s = _find(state)
 
     if s is not None:
-        return s[1], s[2]
+        return s
     else:
         return None
 
@@ -108,11 +120,15 @@ def list_():
     return states
 
 def is_finish():
+    """
+    get whether the fsm is finish.
+    :return: bool
+    """
     return state == end
 
 def step():
     """
-    步进
+    step, mean update once
     :return: bool about statemachine is running-needy or not.
     """
     # step for itself
@@ -149,6 +165,10 @@ def step():
     return True
 
 def is_prepare():
+    """
+    get whether the fsm is steped.
+    :return: bool
+    """
     return _prepare
 
 
@@ -158,18 +178,21 @@ if __name__ == '__main__':
 
 
     def update(state, data):
-        match state:
-            case 'idle':
-                print("i'm idle, next to move")
-                return "move"
-            case 'move':
-                print("i'm moving, next to stop")
-                return "stop"
-        return 'stop'
+        if state == 'idle':
+            print("i'm idle, next to move")
+            return "move"
+        elif state == 'move':
+            print("i'm moving, next to stop")
+            return "stop"
+        else:
+            return 'stop'
 
     start, end = 'idle', 'stop'
 
-    add('idle', 'move', 'stop', fn=update)
+    add('idle', 'move', 'stop', 'a', fn=update)
+    print(list_())
+    remove("a")
+    print(list_())
 
     while not is_finish():
         step()

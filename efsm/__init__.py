@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from efsm.standard.core import StateMachine, StateSet
+from efsm.shell.core import Efsm, EfsmMeta, fsm
 import efsm.micro.core as micro
-from efsm.api_shell.core import Efsm, StateMeta, fsm
-
 
 """
 # to use this. you need to create a StateMachine and add some StateSet to it.
