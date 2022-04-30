@@ -1,26 +1,28 @@
-[python_module-efsm](#0)  
-[General 总体描述](#1)  
-[State 状态](#11)  
-[Processing Function 处理函数](#12)  
-[add the smallest unit to fsm](#13)  
-[config the start and end](#14)  
-[Micro Mode](#2)  
-[how to use](#21)  
-[Standard Mode](#3)  
-[how to use](#31)  
-[You could jump to update other fsm](#32)  
-[You could create a StateSet before and pass this state_set to add](#33)  
-[By the way that StateSet is not a user object](#34)  
-[Shell Mode](#4)  
-[how to use](#41)  
-[but we could use decorater to make it more simple](#42)  
-[use doc to do the same thing](#43)  
-[use doc to a class used EfsmMeta](#44)  
-[demos](#5)  
-[Python Demo-Efsm](#51)  
-[MicroPython Demo-micro or StateMachine](#52)  
-<span id='0'/>
-# 0 python_module-efsm
+# Catalogue/ 目录
+- [General/ 总体描述](#1)  
+  - [State/ 状态](#11)  
+  - [Processing Function/ 处理函数](#12)  
+  - [add the smallest unit to fsm](#13)  
+  - [config the start and end](#14)  
+- [Micro Mode](#2)  
+  - [how to use](#21)  
+- [Standard Mode](#3)  
+  - [how to use](#31)  
+  - [You could jump to update other fsm](#32)  
+  - [You could create a StateSet before and pass this state_set to add](#33)  
+  - [By the way that StateSet is not a user object](#34)  
+- [Shell Mode](#4)  
+  - [how to use](#41)  
+  - [but we could use decorater to make it more simple](#42)  
+  - [use doc to do the same thing](#43)  
+  - [use doc to a class used EfsmMeta](#44)  
+- [demos](#5)  
+  - [Python Demo-Efsm](#51)  
+  - [MicroPython Demo-micro or StateMachine](#52)  
+<span id='0'/>  
+
+# 0 python_module-efsm  
+
 This is module to come fsm in python.  
 There are three parts of this module made to deal with different cases: micro, standard and shell  
 These three modules correspond to three core.py  
@@ -34,12 +36,12 @@ install:
 pip install efsm
 ```
 <span id='1'/>
-# 1 General 总体描述
+# 1 General/ 总体描述
 efsm is a one-stage state machine. The smallest unit is composed of several **state** and their corresponding **processing function**.
 
 efsm是一个一段式状态机，最小单元是由若干个**状态**和其对应的**处理函数**组成的。  
 <span id='11'/>
-## 1 1 State 状态
+## 1 1 State/ 状态
 Any Python object which can hashable could be used regard as a state. Of course, Python string object is the best choice to represent a state  
 In order to create a state, you do not need to do anything more, such as:  
 ```python
@@ -52,7 +54,7 @@ In order to create a state, you do not need to do anything more, such as:
 "this is a string", (1, ), lambda :...  #  这些都是可以接受的状态对象
 ```
 <span id='12'/>
-## 1 2 Processing Function 处理函数
+## 1 2 Processing Function/ 处理函数
 The processing-function to execute specific tasks and return to the next state according to the current state.  
 An available processing function must contain two parameters: state, o  
 
