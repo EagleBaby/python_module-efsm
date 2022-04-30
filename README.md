@@ -1,4 +1,5 @@
-# python_module: efsm
+[toc]
+# 0.python_module: efsm
 This is module to come fsm in python.  
 There are three parts of this module made to deal with different cases: micro, standard and shell  
 These three modules correspond to three core.py  
@@ -16,7 +17,7 @@ efsm is a one-stage state machine. The smallest unit is composed of several **st
 
 efsm是一个一段式状态机，最小单元是由若干个**状态**和其对应的**处理函数**组成的。  
 
-## State/ 状态
+## 1.1 State/ 状态
 Any Python object which can hashable could be used regard as a state. Of course, Python string object is the best choice to represent a state  
 In order to create a state, you do not need to do anything more, such as:  
 ```python
@@ -29,7 +30,7 @@ In order to create a state, you do not need to do anything more, such as:
 "this is a string", (1, ), lambda :...  #  这些都是可以接受的状态对象
 ```
 
-## Processing Function/ 处理函数
+## 1.2 Processing Function/ 处理函数
 The processing-function to execute specific tasks and return to the next state according to the current state.  
 An available processing function must contain two parameters: state, o  
 
@@ -69,7 +70,7 @@ def update(state, o):  # proccessing function which only handle: idle, move, sto
 Then add these smallest units into the FSM object and constantly update these states to come the function of FSM
 然后将这些一个个最小单元添加进fsm对象并不断更新这些状态即可实现fsm的功能
 
-## add the smallest unit to fsm
+## 1.3 add the smallest unit to fsm
 use add(...) to add the smallest unit into your fsm
 ```python
 def add(*state, fn=None, data=None):
@@ -167,7 +168,7 @@ def step(state):
   :return: bool about statemachine is running-needy or not.
   """
 ```
-## config the start (and end)
+## 1.4 config the start (and end)
 There are some attrs in your fsm:
 ##### .state   &emsp;&emsp;   # tell you the the state now fsm is. &emsp;&emsp;# default be setted as .start when first call .step W/R
 ##### .start   &emsp;&emsp;   # tell fsm what the first state is when it first .step.  &emsp;&emsp;# it is a must-fill attr W/R
@@ -186,7 +187,7 @@ It can deploy on micropython. The simplest fsm in this module only consist of so
 
 该模式可以部署在micropython单片机上。这个模块只包含一些函数和数据，你可以把这个module当作一个单例对象  
 
-how to use:
+# 2.1 how to use:
 ```python
 from efsm import micro
 
@@ -219,7 +220,7 @@ It can deploy on micropython. This module offer a StateMachine class. And you ca
 
 该模式可以部署在micropython单片机上。这个模块提供了一个StateMachine类，并且你可以将它们的实例连接成网  
 
-##### 1. how to use:
+##### 3.1 how to use:
 ```python
 from efsm import StateMachine
 
@@ -245,7 +246,7 @@ i'm moving, next to stop
 finish.
 ```
 
-##### 2. You could jump to update other fsm:  
+##### 3.2 You could jump to update other fsm:  
 how to link statemachine:  
 ```python
 from efsm import StateMachine
@@ -278,7 +279,7 @@ finish.
 ```
 But careful for the circle link. It will cause infinite loop.  
   
-##### 3. You could create a StateSet before, and pass this state_set to .add(...)  
+##### 3.3 You could create a StateSet before, and pass this state_set to .add(...)  
 ```python
 from efsm import StateMachine, StateSet
 
@@ -306,7 +307,7 @@ finish.
 ```
 
 
-##### 4. By the way, that StateSet is not a user object:  
+##### 3.4 By the way, that StateSet is not a user object:  
 ```python
 from efsm import StateSet
 
@@ -325,7 +326,7 @@ It can only deploy on PC python. As the name 'shell' shown, it have all the meth
 该模式只能部署在电脑端的python上。类如其名，这个'shell'就好像标准模式下的StateMachine下加了一个壳。它提供了一些简单方便的途经去生成一个fsm  
 
 
-##### 1. how to use:  
+##### 4.1 how to use:  
 Shell-mode use Efsm to replace StateMachine:
 ```python
 from efsm import Efsm, fsm  # efsm offer you a default Efsm instance named fsm
@@ -378,7 +379,7 @@ i'm moving, next to stop
 finish.
 ```
 
-##### 2. but we could use decorater to make it more simple:  
+##### 4.2 but we could use decorater to make it more simple:  
 use decorater to do the same thing:  
 ```python
 from efsm.shell import *
@@ -446,7 +447,7 @@ i'm idle, next to move
 i'm moving, next to stop
 finish
 ```
-##### 3. use doc to do the same thing:  
+##### 4.3 use doc to do the same thing:  
 you must add @state or @sta or @s to the function's doc:  
 ```python
 from efsm.shell import *
@@ -475,7 +476,7 @@ i'm moving, next to stop
 finish
 ```
 
-##### 4. use doc to a class used EfsmMeta:  
+##### 4.4 use doc to a class used EfsmMeta:  
 you could do the similiar thing to a class which use EfsmMeta
 ```python
 from efsm.shell import *
@@ -536,9 +537,9 @@ That's all this python_module-efsm provides.
 Now i will show you few demos in real project:
 
 # 5. demos:
-## 1. Python Demo (Efsm)
+## 5.1 Python Demo (Efsm)
 ...
-## 2. MicroPython Demo (micro or StateMachine)
+## 5.2 MicroPython Demo (micro or StateMachine)
 to use in micropython. you need to copy the core.py from efsm/standard/core.py or efsm/micro/core.py to your micropython device, and you can rename it to 'efsm.py'
 
 
