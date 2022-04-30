@@ -1,5 +1,26 @@
-[toc]
-# 0.python_module: efsm
+[python_module-efsm](#0)  
+[General 总体描述](#1)  
+[State 状态](#11)  
+[Processing Function 处理函数](#12)  
+[add the smallest unit to fsm](#13)  
+[config the start and end](#14)  
+[Micro Mode](#2)  
+[how to use](#21)  
+[Standard Mode](#3)  
+[how to use](#31)  
+[You could jump to update other fsm](#32)  
+[You could create a StateSet before and pass this state_set to add](#33)  
+[By the way that StateSet is not a user object](#34)  
+[Shell Mode](#4)  
+[how to use](#41)  
+[but we could use decorater to make it more simple](#42)  
+[use doc to do the same thing](#43)  
+[use doc to a class used EfsmMeta](#44)  
+[demos](#5)  
+[Python Demo-Efsm](#51)  
+[MicroPython Demo-micro or StateMachine](#52)  
+<span id='0'/>
+# 0 python_module-efsm
 This is module to come fsm in python.  
 There are three parts of this module made to deal with different cases: micro, standard and shell  
 These three modules correspond to three core.py  
@@ -12,12 +33,13 @@ install:
 ```python
 pip install efsm
 ```
-# 1. General/ 总体描述
+<span id='1'/>
+# 1 General 总体描述
 efsm is a one-stage state machine. The smallest unit is composed of several **state** and their corresponding **processing function**.
 
 efsm是一个一段式状态机，最小单元是由若干个**状态**和其对应的**处理函数**组成的。  
-
-## 1.1 State/ 状态
+<span id='11'/>
+## 1 1 State 状态
 Any Python object which can hashable could be used regard as a state. Of course, Python string object is the best choice to represent a state  
 In order to create a state, you do not need to do anything more, such as:  
 ```python
@@ -29,8 +51,8 @@ In order to create a state, you do not need to do anything more, such as:
 ```python
 "this is a string", (1, ), lambda :...  #  这些都是可以接受的状态对象
 ```
-
-## 1.2 Processing Function/ 处理函数
+<span id='12'/>
+## 1 2 Processing Function 处理函数
 The processing-function to execute specific tasks and return to the next state according to the current state.  
 An available processing function must contain two parameters: state, o  
 
@@ -69,8 +91,8 @@ def update(state, o):  # proccessing function which only handle: idle, move, sto
 ```
 Then add these smallest units into the FSM object and constantly update these states to come the function of FSM
 然后将这些一个个最小单元添加进fsm对象并不断更新这些状态即可实现fsm的功能
-
-## 1.3 add the smallest unit to fsm
+<span id='13'/>
+## 1 3 add the smallest unit to fsm
 use add(...) to add the smallest unit into your fsm
 ```python
 def add(*state, fn=None, data=None):
@@ -168,7 +190,8 @@ def step(state):
   :return: bool about statemachine is running-needy or not.
   """
 ```
-## 1.4 config the start (and end)
+<span id='14'/>
+## 1 4 config the start and end
 There are some attrs in your fsm:
 ##### .state   &emsp;&emsp;   # tell you the the state now fsm is. &emsp;&emsp;# default be setted as .start when first call .step W/R
 ##### .start   &emsp;&emsp;   # tell fsm what the first state is when it first .step.  &emsp;&emsp;# it is a must-fill attr W/R
@@ -181,13 +204,13 @@ At least, you must config the .start.
 
 
 The statemachine usage is different in these three way:
-
-# 2. Micro Mode:
+<span id='2'/>
+# 2 Micro Mode
 It can deploy on micropython. The simplest fsm in this module only consist of some datum and functions. You could to use this module as a singleton object.    
 
 该模式可以部署在micropython单片机上。这个模块只包含一些函数和数据，你可以把这个module当作一个单例对象  
-
-# 2.1 how to use:
+<span id='21'/>
+# 2 1 how to use
 ```python
 from efsm import micro
 
@@ -214,13 +237,13 @@ i'm moving, next to stop
 finish.
 ```
 
-
-# 3. Standard Mode:
+<span id='3'/>
+# 3 Standard Mode
 It can deploy on micropython. This module offer a StateMachine class. And you can link their instances to a net.
 
 该模式可以部署在micropython单片机上。这个模块提供了一个StateMachine类，并且你可以将它们的实例连接成网  
-
-##### 3.1 how to use:
+<span id='31'/>
+##### 3 1 how to use
 ```python
 from efsm import StateMachine
 
@@ -245,8 +268,8 @@ i'm idle, next to move
 i'm moving, next to stop
 finish.
 ```
-
-##### 3.2 You could jump to update other fsm:  
+<span id='32'/>
+##### 3 2 You could jump to update other fsm
 how to link statemachine:  
 ```python
 from efsm import StateMachine
@@ -278,8 +301,8 @@ i'm moving, next to stop
 finish.
 ```
 But careful for the circle link. It will cause infinite loop.  
-  
-##### 3.3 You could create a StateSet before, and pass this state_set to .add(...)  
+<span id='33'/>
+##### 3 3 You could create a StateSet before and pass this state_set to add 
 ```python
 from efsm import StateMachine, StateSet
 
@@ -306,8 +329,8 @@ i'm moving, next to stop
 finish.
 ```
 
-
-##### 3.4 By the way, that StateSet is not a user object:  
+<span id='34'/>
+##### 3 4 By the way that StateSet is not a user object
 ```python
 from efsm import StateSet
 
@@ -319,14 +342,14 @@ print(type(ss))
 [('idle', 'move', 'stop'), <function <lambda> at 0x0000028BC8DD76D0>, <efsm.standard.core.Local object at 0x0000028BC8E269B0>]
 <class 'list'>
 ```
-
-# 4. Shell Mode:
+<span id='4'/>
+# 4 Shell Mode
 It can only deploy on PC python. As the name 'shell' shown, it have all the methods statemachine in standard-mode had, almost like a shell on statemachine in standard-mode. It provide some convienent ways to create fsm.  
 
 该模式只能部署在电脑端的python上。类如其名，这个'shell'就好像标准模式下的StateMachine下加了一个壳。它提供了一些简单方便的途经去生成一个fsm  
 
-
-##### 4.1 how to use:  
+<span id='41'/>
+##### 4 1 how to use  
 Shell-mode use Efsm to replace StateMachine:
 ```python
 from efsm import Efsm, fsm  # efsm offer you a default Efsm instance named fsm
@@ -378,8 +401,8 @@ i'm idle, next to move
 i'm moving, next to stop
 finish.
 ```
-
-##### 4.2 but we could use decorater to make it more simple:  
+<span id='42'/>
+##### 4 2 but we could use decorater to make it more simple
 use decorater to do the same thing:  
 ```python
 from efsm.shell import *
@@ -447,7 +470,8 @@ i'm idle, next to move
 i'm moving, next to stop
 finish
 ```
-##### 4.3 use doc to do the same thing:  
+<span id='43'/>
+##### 4 3 use doc to do the same thing
 you must add @state or @sta or @s to the function's doc:  
 ```python
 from efsm.shell import *
@@ -475,8 +499,8 @@ i'm idle, next to move
 i'm moving, next to stop
 finish
 ```
-
-##### 4.4 use doc to a class used EfsmMeta:  
+<span id='44'/>
+##### 4 4 use doc to a class used EfsmMeta 
 you could do the similiar thing to a class which use EfsmMeta
 ```python
 from efsm.shell import *
@@ -535,11 +559,13 @@ print("finish")
   
 That's all this python_module-efsm provides.  
 Now i will show you few demos in real project:
-
-# 5. demos:
-## 5.1 Python Demo (Efsm)
+<span id='5'/>
+# 5 demos
+<span id='51'/>
+## 5 1 Python Demo -Efsm
 ...
-## 5.2 MicroPython Demo (micro or StateMachine)
+<span id='52'/>
+## 5 2 MicroPython Demo -micro or StateMachine
 to use in micropython. you need to copy the core.py from efsm/standard/core.py or efsm/micro/core.py to your micropython device, and you can rename it to 'efsm.py'
 
 
