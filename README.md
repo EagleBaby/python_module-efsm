@@ -111,7 +111,7 @@ Then add these smallest units into the FSM object and constantly update these st
 <span id='13'/>
 
 ## 1.3 add the smallest unit to fsm
-use add(...) to add the smallest unit into your fsm
+use **add(...)** to add the smallest unit into your fsm
 ```python
 def add(*state, fn=None, data=None):
   """
@@ -173,7 +173,7 @@ def tolist():
   """
 ```
 
-use is_finish(...) to get whether this fsm is finish.(only work when your fsm been setted 'end')
+use **is_finish(...)** to get whether this fsm is finish.(only work when your fsm been setted 'end')
 ```python
 def is_finish():
   """
@@ -192,20 +192,21 @@ def is_prepare():
   """
 ```
 
-use restart(...) to reset your fsm but keep your config and all the smallest units
+use **restart(...)** to reset your fsm but keep your config and all the smallest units
 ```python
-def is_prepare():
+def restart():
   """
   reset your fsm but keep your config and all the smallest units
   :return:
   """
 ```
 
-use step(...) to update your fsm
+use **step(...)** to update your fsm
 ```python
-def step():
+def step(*ex):
   """
   step, mean update once
+  :param *ex: external factor interference. Before formally exec step(if not retarget to other), call these exfunc(sm)->None. If any exfunc return a non-None value will immediate stop 'step' in this time, and 'step' will return the value from that exfunc.
   :return: bool about statemachine is running-needy or not.
   """
 ```
