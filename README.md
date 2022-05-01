@@ -66,7 +66,7 @@ The processing-function to execute specific tasks and return to the next state a
 An available processing function must contain two parameters: state, o  
 
 处理函数的作用是根据当前的状态去执行特定的函数任务以及返回下一个状态。   
-一个可用的处理函数必须包含两个参数: state, o  
+一个可用的处理函数必须包含三个参数: state, o, s
 
 ### param: state:
 The current state of fsm which is used to let the programmer decide which branch to exec.  
@@ -82,13 +82,21 @@ Each smallest unit has a corresponding attached o, in which some data can be sto
 该最小单元的附带的运行环境，实际上是一个空的对象实例。  
 每个最小单元都有一个与之对应的附带o, 处理函数在执行时可以将一些数据储存在这个o中.  
 
+### param: s:
+The attached running environment of the fsm is actually an empty object instance.  
+Each fsm has a corresponding attached s, in which some data can be stored when the processing function is executed  
+
+该执行该proccessing function的fsm的运行环境，实际上是一个空的对象实例。  
+每个fsm都有一个与之对应的附带s, 处理函数在执行时可以将一些数据储存在这个s中.  
+
+
 ### return:
 Jump to the next state by the return value of the processing function. If you return none, it means that there is no state transition  
 
 通过处理函数的返回值跳转到下一个状态。如果返回None，就意味着不进行状态转移.  
 
 ```python
-def update(state, o):  # proccessing function which only handle: idle, move, stop/ 只负责处理idle, move, stop三种状态的函数
+def update(state, o, s):  # proccessing function which only handle: idle, move, stop/ 只负责处理idle, move, stop三种状态的函数
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -179,6 +187,7 @@ use is_prepare(...) to get whether this fsm have executed .step().
 def is_prepare():
   """
   get whether the fsm is steped.
+  If this statemachine has link to other as target, will check whether the target is finish.
   :return: bool
   """
 ```
@@ -204,12 +213,12 @@ def step():
 
 ## 1.4 config the start and end
 There are some attrs in your fsm:
-##### .state   &emsp;&emsp;   # tell you the the state now fsm is. &emsp;&emsp;# default be setted as .start when first call .step W/R
-##### .start   &emsp;&emsp;   # tell fsm what the first state is when it first .step.  &emsp;&emsp;# it is a must-fill attr W/R
-##### .end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
-##### .end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
-##### .on_step &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic before .step return 
-##### .on_end  &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic when state==end in .step 
+.state   &emsp;&emsp;   # tell you the the state now fsm is. &emsp;&emsp;# default be setted as .start when first call .step W/R
+.start   &emsp;&emsp;   # tell fsm what the first state is when it first .step.  &emsp;&emsp;# it is a must-fill attr W/R
+.end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
+.end     &emsp;&emsp;   # tell fsm should stop and will return False from .step, and when you call is_finish() will return False also. W/R
+.on_step &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic before .step return 
+.on_end  &emsp;&emsp;   # like fn(statemachine:object)->None, will called by fsm automatic when state==end in .step 
 
 At least, you must config the .start.
 
@@ -227,7 +236,7 @@ It can deploy on micropython. The simplest fsm in this module only consist of so
 ```python
 from efsm import micro
 
-def update(state, o):
+def update(state, o, s):
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -262,7 +271,7 @@ It can deploy on micropython. This module offer a StateMachine class. And you ca
 ```python
 from efsm import StateMachine
 
-def update(state, o):
+def update(state, o, s):
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -290,7 +299,7 @@ how to link statemachine:
 ```python
 from efsm import StateMachine
 
-def update(state, o):
+def update(state, o, s):
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -323,7 +332,7 @@ But careful for the circle link. It will cause infinite loop.
 ```python
 from efsm import StateMachine, StateSet
 
-def update(state, o):
+def update(state, o, s):
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -374,7 +383,7 @@ Shell-mode use Efsm to replace StateMachine:
 ```python
 from efsm import Efsm, fsm  # efsm offer you a default Efsm instance named fsm
 
-def update(state, o):
+def update(state):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -401,7 +410,7 @@ very simplify code, right?
 ```python
 from efsm import Efsm, fsm
 
-def update(state, o):
+def update(state):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -431,7 +440,7 @@ from efsm.shell import *
 ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-mode
 
 @ss.idle.move.stop  # only use for function. not the class method
-def update(state, o):
+def update(state):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -454,7 +463,7 @@ ss = StateSet()  # create a empty StateSet.  # Only use like this way in shell-m
 
 @fsm
 @ss.idle.move.stop  # only use for function. not the class method
-def update(state, o):
+def update(state):    # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -473,7 +482,7 @@ use fsm.ss replace ss could reach the same effect:
 from efsm.shell import *
 
 @fsm.ss.idle.move.stop  # only use for function. not the class method
-def update(state, o):
+def update(state, o):   # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   match state:
       case 'idle':
           print("i'm idle, next to move")
@@ -498,7 +507,7 @@ you must add @state or @sta or @s to the function's doc:
 ```python
 from efsm.shell import *
 
-def update(state, o):
+def update(state, o, s):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
   """
   @state idle move stop  # you could use ',' as the separater.  like idle, move stop
   """
@@ -536,7 +545,7 @@ class Test(metaclass=EfsmMeta):  # use EfsmMeta to auto add Test._efsm = Efsm()
   # __step__ = 'step'  # Auto create a method in this class, used for efsm.step(). Default is 'step', you can overwrite it.
   # def __bool__(self): ...  # Auto create a __bool__ method if you donot define it, Default is efsm.__bool__, you can overwrite it.
   
-  def update(self, state, o):
+  def update(self, state, o):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it.
     match state:
         case 'idle':
             print("i'm idle, next to move")
@@ -559,7 +568,7 @@ class Test:
   """
   @state idle move stop -> update  # in this way, the '->' is useless.
   """
-  def __call__(self, state, o):
+  def __call__(self, state, o):  # in shell-mode, you caould pass 0-3 params, it will auto choose how to call it. 
     match state:
         case 'idle':
             print("i'm idle, next to move")
